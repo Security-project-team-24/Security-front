@@ -10,7 +10,8 @@ export type CertificateActions = {
   generateCertificatesRes: () => Promise<void>;
   getIssuers: () => Promise<void>;
   getCertificates: (pageNumber: number, pageSize: number) => Promise<void>;
-  downloadCertificate: (serialNumber: string) => Promise<void>
+  downloadCertificate: (serialNumber: string) => Promise<void>;
+  revokeCertificate: (serialNumber: string) => Promise<void>;
 };
 
 export type CertificateState = {
@@ -83,6 +84,28 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
       set(
         produce((state: CertificateState) => {
           fileDownload(res.data, "certificate.crt")
+          return state;
+        })
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  revokeCertificate: async (serialNumber: string) => {
+    set(
+      produce((state: CertificateState) => {
+        state.spinner = true
+        return state;
+      })
+    )
+    try {
+      const res = await axios.patch(`${process.env.REACT_APP_BASE_URL}/api/certificate/${serialNumber}/revoke` , {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      set(
+        produce((state: CertificateState) => {
           return state;
         })
       );

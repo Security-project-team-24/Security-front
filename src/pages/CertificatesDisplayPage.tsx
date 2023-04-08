@@ -16,6 +16,7 @@ import {
   Thead,
   Tr,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useApplicationStore } from "../store/application.store";
@@ -24,6 +25,7 @@ import ReactPaginate from 'react-paginate';
 import "../styles/pagination.css"
 import { Certificate } from "../store/types/certificate";
 import { CertificateDetails } from "../components/CertificateDetails";
+import { displayToast } from "../utils/toast.caller";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
@@ -32,7 +34,9 @@ export const CertificatesDisplayPage = () => {
   const spinner = useApplicationStore((state) => state.spinner)
   const [currentPage, setCurrentPage] = useState<number>(0)
   const downloadCertificate = useApplicationStore((state) => state.downloadCertificate)
+  const revokeCertificate = useApplicationStore((state) => state.revokeCertificate)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const toast = useToast();
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate>(
     {id: "",
     serialNumber: "",
@@ -63,8 +67,13 @@ export const CertificatesDisplayPage = () => {
   };
 
   const download = async (serialNumber: string) => {
-    console.log(serialNumber)
     await downloadCertificate(serialNumber)
+  };
+
+  const revoke = async (serialNumber: string) => {
+    await revokeCertificate(serialNumber)
+    displayToast(toast, "Successfully revoked certificate : " + serialNumber + "!", "success");
+    await getCertificates(currentPage, 5)
   };
 
   const handleSelectCertificate = (certificate: Certificate) => {
@@ -104,6 +113,7 @@ export const CertificatesDisplayPage = () => {
                                     }
                                     <Td><Button onClick={() => handleSelectCertificate(item)}>Details</Button></Td>
                                     <Td><Button onClick={() => {download(item.serialNumber)}}>Download</Button></Td>
+                                    <Td><Button onClick={() => {revoke(item.serialNumber)}}>Revoke</Button></Td>
                                 </Tr>
                             ))}
                     </Tbody>
