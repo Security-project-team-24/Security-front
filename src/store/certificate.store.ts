@@ -12,6 +12,7 @@ export type CertificateActions = {
   getCertificates: (pageNumber: number, pageSize: number) => Promise<void>;
   downloadCertificate: (serialNumber: string) => Promise<void>;
   revokeCertificate: (serialNumber: string) => Promise<void>;
+  checkRevocationStatus: (serialNumber: string) => Promise<void>
 };
 
 export type CertificateState = {
@@ -19,13 +20,17 @@ export type CertificateState = {
   certificates: [];
   totalPages: number;
   spinner: boolean
+  revokeCertificateRes: any
+  checkRevocationStatusRes: any
 };
 
 export const state: CertificateState = {
   certificates: [],
   issuers: [],
   totalPages: 0,
-  spinner: false
+  spinner: false,
+  revokeCertificateRes: null,
+  checkRevocationStatusRes: null
 }
 
 export type CertificateStore = CertificateState & CertificateActions;
@@ -106,6 +111,25 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
       });
       set(
         produce((state: CertificateState) => {
+          state.spinner = false
+          state.revokeCertificateRes = res.status
+          return state;
+        })
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  checkRevocationStatus: async (serialNumber: string) => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/certificate/${serialNumber}/revoke/check` , {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      set(
+        produce((state: CertificateState) => {
+          state.checkRevocationStatusRes = res.data
           return state;
         })
       );

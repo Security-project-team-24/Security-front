@@ -26,6 +26,7 @@ import "../styles/pagination.css"
 import { Certificate } from "../store/types/certificate";
 import { CertificateDetails } from "../components/CertificateDetails";
 import { displayToast } from "../utils/toast.caller";
+import { CertificateRevocationStatus } from "../components/CertificateRevocationStatus";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
@@ -35,7 +36,11 @@ export const CertificatesDisplayPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(0)
   const downloadCertificate = useApplicationStore((state) => state.downloadCertificate)
   const revokeCertificate = useApplicationStore((state) => state.revokeCertificate)
+  const revokeCertificateRes = useApplicationStore((state) => state.revokeCertificateRes)
+  const checkRevocationStatus = useApplicationStore((state) => state.checkRevocationStatus)
+  const checkRevocationStatusRes = useApplicationStore((state) => state.checkRevocationStatusRes)
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen : isOpenRevocationStatusModal, onOpen : onOpenRevocationStatusModal, onClose : onCloseRevocationStatusModal } = useDisclosure()
   const toast = useToast();
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate>(
     {id: "",
@@ -72,8 +77,14 @@ export const CertificatesDisplayPage = () => {
 
   const revoke = async (serialNumber: string) => {
     await revokeCertificate(serialNumber)
-    displayToast(toast, "Successfully revoked certificate : " + serialNumber + "!", "success");
-    await getCertificates(currentPage, 5)
+    if (revokeCertificateRes == 200)
+      displayToast(toast, "Successfully revoked certificate : " + serialNumber + "!", "success");
+  };
+
+  const checkStatus = async (certificate: Certificate) => {
+    setSelectedCertificate(certificate)
+    await checkRevocationStatus(certificate.serialNumber)
+    onOpenRevocationStatusModal()
   };
 
   const handleSelectCertificate = (certificate: Certificate) => {
@@ -93,7 +104,6 @@ export const CertificatesDisplayPage = () => {
                             <Th>Common name</Th>
                             <Th>Surname</Th>
                             <Th>Organization</Th>
-                            <Th>Revocation date</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
@@ -105,21 +115,17 @@ export const CertificatesDisplayPage = () => {
                                     <Td>{item.commonName}</Td>
                                     <Td>{item.surname}</Td>
                                     <Td>{item.organization}</Td>
-                                    { item.revocationStatus == true &&                  
-                                      <Td>{format(new Date(item.revocationDate), 'dd-MM-yyyy').toString()}</Td>
-                                    }
-                                    { item.revocationStatus == false &&                  
-                                      <Td>/</Td>
-                                    }
+                                    <Td><Button onClick={() => {checkStatus(item)}}>Revocation status</Button></Td>
                                     <Td><Button onClick={() => handleSelectCertificate(item)}>Details</Button></Td>
                                     <Td><Button onClick={() => {download(item.serialNumber)}}>Download</Button></Td>
-                                    <Td><Button onClick={() => {revoke(item.serialNumber)}}>Revoke</Button></Td>
+                                    <Td><Button color='red' onClick={() => {revoke(item.serialNumber)}}>Revoke</Button></Td>
                                 </Tr>
                             ))}
                     </Tbody>
                 </Table>
             </TableContainer>
             <CertificateDetails isOpen={isOpen} onOpen={onOpen} onClose={onClose} certificate={selectedCertificate}/>
+            <CertificateRevocationStatus isOpen={isOpenRevocationStatusModal} onOpen={onOpenRevocationStatusModal} onClose={onCloseRevocationStatusModal} revocationStatus={checkRevocationStatusRes} certificate={selectedCertificate}/>
             {spinner == true &&
                 <Flex justifyContent='center'>
                     <Spinner size='xl' />
