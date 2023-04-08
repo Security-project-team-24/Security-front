@@ -4,11 +4,13 @@ import { Issuer } from "./types/issuer";
 import axios from "axios";
 import env from "react-dotenv";
 import produce from "immer";
+import fileDownload from 'js-file-download'
 
 export type CertificateActions = {
   generateCertificatesRes: () => Promise<void>;
   getIssuers: () => Promise<void>;
   getCertificates: (pageNumber: number, pageSize: number) => Promise<void>;
+  downloadCertificate: (serialNumber: string) => Promise<void>
 };
 
 export type CertificateState = {
@@ -65,6 +67,22 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
           state.spinner = false
           state.certificates = res.data.content;
           state.totalPages = res.data.totalPages;
+          return state;
+        })
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  downloadCertificate: async (serialNumber: string) => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/certificate/download/${serialNumber}` , {
+        responseType: 'blob', 
+      });
+      
+      set(
+        produce((state: CertificateState) => {
+          fileDownload(res.data, "certificate.crt")
           return state;
         })
       );

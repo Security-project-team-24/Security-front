@@ -29,6 +29,7 @@ export const CertificatesDisplayPage = () => {
   const totalPages = useApplicationStore((state) => state.totalPages)
   const spinner = useApplicationStore((state) => state.spinner)
   const [currentPage, setCurrentPage] = useState<number>(0)
+  const downloadCertificate = useApplicationStore((state) => state.downloadCertificate)
 
   const init = async () => {
     await getCertificates(currentPage, 5);
@@ -41,7 +42,14 @@ export const CertificatesDisplayPage = () => {
   const handlePageClick = async (event: any) => {
     await getCertificates(event.selected, 5)
     setCurrentPage(event.selected)
-};
+  };
+
+  const download = async (serialNumber: string) => {
+    console.log(serialNumber)
+    await downloadCertificate(serialNumber)
+    //await getCertificates(event.selected, 5)
+    //setCurrentPage(event.selected)
+  };
 
   return (
     <>
@@ -81,6 +89,7 @@ export const CertificatesDisplayPage = () => {
                                     { item.revocationStatus == false &&                  
                                       <Td>/</Td>
                                     }
+                                    <Td><button onClick={() => {download(item.serialNumber)}}>Download</button></Td>
                                 </Tr>
                             ))}
                     </Tbody>
