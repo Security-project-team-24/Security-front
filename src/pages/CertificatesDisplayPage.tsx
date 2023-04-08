@@ -15,6 +15,7 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useApplicationStore } from "../store/application.store";
@@ -22,6 +23,7 @@ import { format } from 'date-fns'
 import ReactPaginate from 'react-paginate';
 import "../styles/pagination.css"
 import { Certificate } from "../store/types/certificate";
+import { CertificateDetails } from "../components/CertificateDetails";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
@@ -30,6 +32,22 @@ export const CertificatesDisplayPage = () => {
   const spinner = useApplicationStore((state) => state.spinner)
   const [currentPage, setCurrentPage] = useState<number>(0)
   const downloadCertificate = useApplicationStore((state) => state.downloadCertificate)
+  const { isOpen, onOpen, onClose } = useDisclosure()
+  const [selectedCertificate, setSelectedCertificate] = useState<Certificate>(
+    {id: "",
+    serialNumber: "",
+    issuerSerial: "", 
+    commonName: "", 
+    surname: "",
+    email: "",
+    organization: "",
+    organizationUnit: "",
+    country: "",
+    validFrom: new Date(), 
+    validTo: new Date(),
+    revocationStatus: false, 
+    revocationDate: new Date(),
+    keystore: ""})
 
   const init = async () => {
     await getCertificates(currentPage, 5);
@@ -47,9 +65,12 @@ export const CertificatesDisplayPage = () => {
   const download = async (serialNumber: string) => {
     console.log(serialNumber)
     await downloadCertificate(serialNumber)
-    //await getCertificates(event.selected, 5)
-    //setCurrentPage(event.selected)
   };
+
+  const handleSelectCertificate = (certificate: Certificate) => {
+    setSelectedCertificate(certificate)
+    onOpen()
+}
 
   return (
     <>
@@ -63,10 +84,6 @@ export const CertificatesDisplayPage = () => {
                             <Th>Common name</Th>
                             <Th>Surname</Th>
                             <Th>Organization</Th>
-                            <Th>Email</Th>
-                            <Th>Org unit</Th>
-                            <Th>Country</Th>
-                            <Th>Valid</Th>
                             <Th>Revocation date</Th>
                         </Tr>
                     </Thead>
@@ -79,22 +96,20 @@ export const CertificatesDisplayPage = () => {
                                     <Td>{item.commonName}</Td>
                                     <Td>{item.surname}</Td>
                                     <Td>{item.organization}</Td>
-                                    <Td>{item.email}</Td>
-                                    <Td>{item.organizationUnit}</Td>
-                                    <Td>{item.country}</Td>
-                                    <Td>{format(new Date(item.validFrom), 'dd-MM-yyyy').toString()} - {format(new Date(item.validTo), 'dd-MM-yyyy').toString()}</Td>
                                     { item.revocationStatus == true &&                  
                                       <Td>{format(new Date(item.revocationDate), 'dd-MM-yyyy').toString()}</Td>
                                     }
                                     { item.revocationStatus == false &&                  
                                       <Td>/</Td>
                                     }
-                                    <Td><button onClick={() => {download(item.serialNumber)}}>Download</button></Td>
+                                    <Td><Button onClick={() => handleSelectCertificate(item)}>Details</Button></Td>
+                                    <Td><Button onClick={() => {download(item.serialNumber)}}>Download</Button></Td>
                                 </Tr>
                             ))}
                     </Tbody>
                 </Table>
             </TableContainer>
+            <CertificateDetails isOpen={isOpen} onOpen={onOpen} onClose={onClose} certificate={selectedCertificate}/>
             {spinner == true &&
                 <Flex justifyContent='center'>
                     <Spinner size='xl' />
