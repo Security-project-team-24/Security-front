@@ -5,6 +5,7 @@ import {
   Flex,
   Input,
   Select,
+  Spinner,
   Table,
   TableCaption,
   TableContainer,
@@ -15,24 +16,35 @@ import {
   Thead,
   Tr,
 } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useApplicationStore } from "../store/application.store";
 import { format } from 'date-fns'
+import ReactPaginate from 'react-paginate';
+import "../styles/pagination.css"
 import { Certificate } from "../store/types/certificate";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
   const certificates = useApplicationStore((state) => state.certificates);
+  const totalPages = useApplicationStore((state) => state.totalPages)
+  const spinner = useApplicationStore((state) => state.spinner)
+  const [currentPage, setCurrentPage] = useState<number>(0)
 
   const init = async () => {
-    await getCertificates(0, 5);
+    await getCertificates(currentPage, 5);
   };
 
   useEffect(() => {
     init();
   }, []);
 
+  const handlePageClick = async (event: any) => {
+    await getCertificates(event.selected, 5)
+    setCurrentPage(event.selected)
+};
+
   return (
+    <>
     <TableContainer flex={1}>
                 <Table variant='striped' colorScheme='teal'>
                     <TableCaption>Certificates</TableCaption>
@@ -74,5 +86,29 @@ export const CertificatesDisplayPage = () => {
                     </Tbody>
                 </Table>
             </TableContainer>
+            {spinner == true &&
+                <Flex justifyContent='center'>
+                    <Spinner size='xl' />
+                </Flex>
+            }
+            <Flex flexDirection='column' justifyContent='column' padding='15px 20px' boxSizing='border-box' width='100%' height='100%' mt={'auto'}>
+            <ReactPaginate
+                activeClassName={'item active '}
+                forcePage={currentPage}
+                breakClassName={'item break-me '}
+                breakLabel={'...'}
+                containerClassName={'pagination'}
+                disabledClassName={'disabled-page'}
+                marginPagesDisplayed={2}
+                nextClassName={"item next "}
+                nextLabel=">"
+                onPageChange={handlePageClick}
+                pageCount={totalPages}
+                pageClassName={'item pagination-page '}
+                pageRangeDisplayed={2}
+                previousClassName={"item previous"}
+                previousLabel="<" />
+          </Flex>
+    </>
   );
 };

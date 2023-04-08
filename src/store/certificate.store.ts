@@ -15,12 +15,14 @@ export type CertificateState = {
   issuers: Issuer[];
   certificates: [];
   totalPages: number;
+  spinner: boolean
 };
 
 export const state: CertificateState = {
   certificates: [],
   issuers: [],
   totalPages: 0,
+  spinner: false
 }
 
 export type CertificateStore = CertificateState & CertificateActions;
@@ -46,6 +48,12 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
     }
   },
   getCertificates: async (pageNumber: number, pageSize: number) => {
+    set(
+      produce((state: CertificateState) => {
+        state.spinner = true
+        return state;
+      })
+    )
     try {
       const res = await axios.get(`${process.env.REACT_APP_BASE_URL}/api/certificate/findAll/${pageNumber}/${pageSize}` , {
         headers: {
@@ -54,8 +62,8 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
       });
       set(
         produce((state: CertificateState) => {
+          state.spinner = false
           state.certificates = res.data.content;
-          console.log(state.certificates)
           state.totalPages = res.data.totalPages;
           return state;
         })
