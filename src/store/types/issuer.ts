@@ -1,4 +1,4 @@
 export type Issuer = {
-  id: string;
+  serialNumber: string;
   commonName: string;
 };
