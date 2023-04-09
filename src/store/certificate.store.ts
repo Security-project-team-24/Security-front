@@ -15,6 +15,7 @@ export type CertificateActions = {
   downloadCertificate: (serialNumber: string) => Promise<void>;
   revokeCertificate: (serialNumber: string) => Promise<void>;
   checkRevocationStatus: (serialNumber: string) => Promise<void>;
+  verifyCertificate: (certificate: File) => Promise<boolean>
 };
 
 export type CertificateState = {
@@ -222,5 +223,13 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
     } catch (e) {
       console.log(e);
     }
+  },
+  verifyCertificate: async (certificate: File) => {
+      const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/certificate/verify` ,{file: certificate}, {
+        headers: {
+          "Content-Type": "multipart/form-data;boundary=----WebKitFormBoundaryABC123",
+        },
+      });
+      return res.data;
   },
 });

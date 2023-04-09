@@ -18,7 +18,7 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { useApplicationStore } from "../store/application.store";
 import { format } from "date-fns";
 import ReactPaginate from "react-paginate";
@@ -27,6 +27,7 @@ import { Certificate } from "../store/types/certificate";
 import { CertificateDetails } from "../components/CertificateDetails";
 import { displayToast } from "../utils/toast.caller";
 import { CertificateRevocationStatus } from "../components/CertificateRevocationStatus";
+import { type } from "os";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
@@ -34,6 +35,7 @@ export const CertificatesDisplayPage = () => {
   const totalPages = useApplicationStore((state) => state.totalPages);
   const spinner = useApplicationStore((state) => state.spinner);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const [file, setFile] = useState<File>();
   const downloadCertificate = useApplicationStore(
     (state) => state.downloadCertificate
   );
@@ -48,6 +50,9 @@ export const CertificatesDisplayPage = () => {
   );
   const checkRevocationStatusRes = useApplicationStore(
     (state) => state.checkRevocationStatusRes
+  );
+  const verifyCertificate = useApplicationStore(
+    (state) => state.verifyCertificate
   );
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -85,6 +90,23 @@ export const CertificatesDisplayPage = () => {
   const handlePageClick = async (event: any) => {
     await getCertificates(event.selected, 5);
     setCurrentPage(event.selected);
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleOnVerify = async () => {
+    if (typeof file !== "undefined") {
+      var isCertificateValid: boolean = await verifyCertificate(file);
+      if (isCertificateValid) {
+        displayToast(toast, "Certificate is Valid!", "success");
+        return;
+      }
+      displayToast(toast, "Certificate is not valid!", "error");
+    }
   };
 
   const download = async (serialNumber: string) => {
@@ -217,6 +239,25 @@ export const CertificatesDisplayPage = () => {
           previousClassName={"item previous"}
           previousLabel="<"
         />
+      </Flex>
+      <Flex width={"30rem"} height={"100"} mx="10" gap={"5"}>
+        <Input
+          placeholder="Given name"
+          mt="20px"
+          type="file"
+          onChange={handleFileChange}
+          w="75%"
+        ></Input>
+        <Button
+          w="25%"
+          my="5"
+          onClick={() => {
+            handleOnVerify();
+          }}
+          disabled={typeof file === "undefined"}
+        >
+          Verify
+        </Button>
       </Flex>
     </>
   );

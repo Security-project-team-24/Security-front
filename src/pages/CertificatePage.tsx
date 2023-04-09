@@ -125,8 +125,15 @@ export const CertificatePage = () => {
             onChange={(e) => setIssuer(e.target.value)}
           >
             {issuers &&
+<<<<<<< HEAD
               issuers.map((issuer) => (
                 <option value={issuer.serialNumber}>{issuer.commonName}</option>
+=======
+              issuers.map((issuer, index) => (
+                <option key={index} value={issuer.id}>
+                  {issuer.commonName}
+                </option>
+>>>>>>> 9fa0670 (added certificate verification)
               ))}
           </Select>
 
