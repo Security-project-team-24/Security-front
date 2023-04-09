@@ -1,11 +1,12 @@
 import { Button, Flex, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
+import { Certificate } from '../store/types/certificate'
 
 interface Props {
     isOpen: boolean
     onOpen: () => void
     onClose: () => void
-    certificate: any
+    certificate: Certificate
 }
 
 

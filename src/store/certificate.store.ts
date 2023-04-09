@@ -5,6 +5,7 @@ import axios from "axios";
 import env from "react-dotenv";
 import produce from "immer";
 import fileDownload from 'js-file-download'
+import { Revocation } from "./types/revocation";
 
 export type CertificateActions = {
   generateCertificatesRes: () => Promise<void>;
@@ -21,7 +22,7 @@ export type CertificateState = {
   totalPages: number;
   spinner: boolean
   revokeCertificateRes: any
-  checkRevocationStatusRes: any
+  checkRevocationStatusRes: Revocation
 };
 
 export const state: CertificateState = {
@@ -30,7 +31,7 @@ export const state: CertificateState = {
   totalPages: 0,
   spinner: false,
   revokeCertificateRes: null,
-  checkRevocationStatusRes: null
+  checkRevocationStatusRes: {revoked: false, revocationDate: new Date()}
 }
 
 export type CertificateStore = CertificateState & CertificateActions;
