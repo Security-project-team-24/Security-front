@@ -1,12 +1,14 @@
 import { Button, Flex, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
+import { Certificate } from '../store/types/certificate'
+import { Revocation } from '../store/types/revocation'
 
 interface Props {
     isOpen: boolean
     onOpen: () => void
     onClose: () => void
-    revocationStatus: any
-    certificate: any
+    revocationStatus: Revocation
+    certificate: Certificate
 }
 
 
@@ -23,18 +25,23 @@ export const CertificateRevocationStatus = ({ isOpen, onOpen, onClose, revocatio
                     <form>
                     <FormControl mb='5'>
                             <FormLabel>Serial number</FormLabel>
-                            <Input disabled={true} value={certificate.serialNumber}></Input>
+                            <Input disabled={true} value={certificate.serialNumber}/>
                         </FormControl>
                         <FormControl mb='5'>
                             <FormLabel>Revoked</FormLabel>
-                            <Input disabled={true} value={revocationStatus.revoked}></Input>
-                        </FormControl>
-                        <FormControl mb='5'>
-                            <FormLabel>Revocation date</FormLabel>
                             { revocationStatus.revoked == true &&
-                                <Input disabled={true} value={format(new Date(revocationStatus.revocationDate), 'dd-MM-yyyy')}></Input>
+                                <Input disabled={true} value='TRUE'/>
+                            }
+                            { revocationStatus.revoked == false &&
+                                <Input disabled={true} value='FALSE'/>
                             }
                         </FormControl>
+                        { revocationStatus.revoked == true &&
+                            <FormControl mb='5'>
+                                <FormLabel>Revocation date</FormLabel>
+                                <Input disabled={true} value={format(new Date(revocationStatus.revocationDate), 'dd-MM-yyyy')}/>
+                            </FormControl>
+                        }
                     </form>
                 </ModalBody>
             </ModalContent>
