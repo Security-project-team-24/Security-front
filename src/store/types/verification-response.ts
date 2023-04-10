@@ -1,3 +1,3 @@
-export type VerificationResponse = {
-    error :string 
+export type ErrorResponse = {
+    error :string | null
 }

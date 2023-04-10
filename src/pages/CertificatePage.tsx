@@ -9,10 +9,13 @@ import {
   Select,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useApplicationStore } from "../store/application.store";
 import { Certificate } from "../store/types/certificate";
+import { displayToast } from "../utils/toast.caller";
+import { ErrorResponse } from "../store/types/verification-response";
 
 export const CertificatePage = () => {
   const getIssuers = useApplicationStore((state) => state.getIssuers);
@@ -38,10 +41,18 @@ export const CertificatePage = () => {
   const init = async () => {
     await getIssuers();
   };
+  const toast = useToast();
 
   useEffect(() => {
     init();
   }, []);
+  const showToast = (errorResponse: ErrorResponse) => {
+    if (!errorResponse.error) {
+      displayToast(toast, "Certificate created!", "success");
+      return;
+    }
+    displayToast(toast, errorResponse.error, "error");
+  };
 
   const handleGenerateCertificate = async () => {
     const certificate: Certificate = {
@@ -62,10 +73,12 @@ export const CertificatePage = () => {
       revocationDate: new Date(),
     };
     if (permission === "1") {
-      await generateIntermediaryCertificate(certificate);
+      const errorResponse = await generateIntermediaryCertificate(certificate);
+      showToast(errorResponse);
       return;
     }
-    await generateEndCertificate(certificate);
+    const errorResponse = await generateEndCertificate(certificate);
+    showToast(errorResponse);
   };
 
   return (
@@ -125,15 +138,10 @@ export const CertificatePage = () => {
             onChange={(e) => setIssuer(e.target.value)}
           >
             {issuers &&
-<<<<<<< HEAD
-              issuers.map((issuer) => (
-                <option value={issuer.serialNumber}>{issuer.commonName}</option>
-=======
-              issuers.map((issuer, index) => (
-                <option key={index} value={issuer.id}>
+              issuers.map((issuer, key) => (
+                <option key={key} value={issuer.serialNumber}>
                   {issuer.commonName}
                 </option>
->>>>>>> 9fa0670 (added certificate verification)
               ))}
           </Select>
 
