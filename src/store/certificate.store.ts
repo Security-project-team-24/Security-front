@@ -6,15 +6,17 @@ import env from "react-dotenv";
 import produce from "immer";
 import fileDownload from "js-file-download";
 import { Revocation } from "./types/revocation";
+import { ErrorResponse } from "./types/verification-response";
 
 export type CertificateActions = {
-  generateEndCertificate: (certificate: Certificate) => Promise<void>;
-  generateIntermediaryCertificate: (certificate: Certificate) => Promise<void>;
+  generateEndCertificate: (certificate: Certificate) => Promise<ErrorResponse>;
+  generateIntermediaryCertificate: (certificate: Certificate) => Promise<ErrorResponse>;
   getIssuers: () => Promise<void>;
   getCertificates: (pageNumber: number, pageSize: number) => Promise<void>;
   downloadCertificate: (serialNumber: string) => Promise<void>;
   revokeCertificate: (serialNumber: string) => Promise<void>;
   checkRevocationStatus: (serialNumber: string) => Promise<void>;
+  verifyCertificate: (certificate: File) => Promise<ErrorResponse>
 };
 
 export type CertificateState = {
@@ -67,12 +69,13 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
       );
       set(
         produce((state: CertificateState) => {
-          state.generateCertificateRes = res.data;
+          state.generateCertificateRes = null;
           return state;
         })
       );
-    } catch (e) {
-      console.log(e);
+      return {error:null}
+    } catch (e:any) {
+        return {error:e.response.data.message}
     }
   },
   generateIntermediaryCertificate: async (certificate: Certificate) => {
@@ -105,8 +108,9 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
           return state;
         })
       );
-    } catch (e) {
-      console.log(e);
+      return {error:null}
+    } catch (e:any) {
+        return {error: e.response.data.message}
     }
   },
   getIssuers: async () => {
@@ -221,6 +225,19 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
       );
     } catch (e) {
       console.log(e);
+    }
+  },
+  verifyCertificate: async (certificate: File) => {
+    try{
+      const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/certificate/verify` ,{file: certificate}, {
+        headers: {
+          "Content-Type": "multipart/form-data;boundary=----WebKitFormBoundaryABC123",
+        },
+      });
+      return {error: null}
+    }catch(e: any){
+        console.log(e)
+        return {error: e.response.data.message}
     }
   },
 });
