@@ -6,6 +6,7 @@ import env from "react-dotenv";
 import produce from "immer";
 import fileDownload from "js-file-download";
 import { Revocation } from "./types/revocation";
+import { VerificationResponse } from "./types/verification-response";
 
 export type CertificateActions = {
   generateEndCertificate: (certificate: Certificate) => Promise<void>;
@@ -15,7 +16,7 @@ export type CertificateActions = {
   downloadCertificate: (serialNumber: string) => Promise<void>;
   revokeCertificate: (serialNumber: string) => Promise<void>;
   checkRevocationStatus: (serialNumber: string) => Promise<void>;
-  verifyCertificate: (certificate: File) => Promise<boolean>
+  verifyCertificate: (certificate: File) => Promise<VerificationResponse>
 };
 
 export type CertificateState = {
@@ -225,11 +226,16 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
     }
   },
   verifyCertificate: async (certificate: File) => {
+    try{
       const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/certificate/verify` ,{file: certificate}, {
         headers: {
           "Content-Type": "multipart/form-data;boundary=----WebKitFormBoundaryABC123",
         },
       });
-      return res.data;
+      return {error: null}
+    }catch(e: any){
+        console.log(e)
+        return {error: e.response.data.message}
+    }
   },
 });

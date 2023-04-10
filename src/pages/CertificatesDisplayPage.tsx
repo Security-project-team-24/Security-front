@@ -28,6 +28,7 @@ import { CertificateDetails } from "../components/CertificateDetails";
 import { displayToast } from "../utils/toast.caller";
 import { CertificateRevocationStatus } from "../components/CertificateRevocationStatus";
 import { type } from "os";
+import { VerificationResponse } from "../store/types/verification-response";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
@@ -100,12 +101,14 @@ export const CertificatesDisplayPage = () => {
 
   const handleOnVerify = async () => {
     if (typeof file !== "undefined") {
-      var isCertificateValid: boolean = await verifyCertificate(file);
-      if (isCertificateValid) {
+      var isCertificateValid: VerificationResponse = await verifyCertificate(
+        file
+      );
+      if (!isCertificateValid.error) {
         displayToast(toast, "Certificate is Valid!", "success");
         return;
       }
-      displayToast(toast, "Certificate is not valid!", "error");
+      displayToast(toast, isCertificateValid.error, "error");
     }
   };
 
