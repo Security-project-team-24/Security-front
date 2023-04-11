@@ -116,12 +116,11 @@ export const CertificatesDisplayPage = () => {
 
   const revoke = async (serialNumber: string) => {
     await revokeCertificate(serialNumber);
-    if (revokeCertificateRes == 200)
-      displayToast(
-        toast,
-        "Successfully revoked certificate : " + serialNumber + "!",
-        "success"
-      );
+    displayToast(
+      toast,
+      "Successfully revoked certificate : " + serialNumber + "!",
+      "success"
+    );
   };
 
   const checkStatus = async (certificate: Certificate) => {
