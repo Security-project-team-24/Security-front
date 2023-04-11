@@ -26,6 +26,9 @@ export const CertificatePage = () => {
   const generateIntermediaryCertificate = useApplicationStore(
     (state) => state.generateIntermediaryCertificate
   );
+  const generateRootCertificate = useApplicationStore(
+    (state) => state.generateRootCertificate
+  );
   const [commonName, setCommonName] = useState("");
   const [surname, setSurname] = useState("");
   const [givenName, setGivenName] = useState("");
@@ -73,6 +76,11 @@ export const CertificatePage = () => {
       revocationDate: new Date(),
     };
     if (permission === "1") {
+      const errorResponse = await generateRootCertificate(certificate);
+      showToast(errorResponse);
+      return;
+    }
+    if (permission === "2") {
       const errorResponse = await generateIntermediaryCertificate(certificate);
       showToast(errorResponse);
       return;
@@ -160,8 +168,9 @@ export const CertificatePage = () => {
           ></Input>
           <RadioGroup onChange={setPermission} value={permission}>
             <Stack direction="row">
-              <Radio value="1">CA</Radio>
-              <Radio value="2">Not CA</Radio>
+              <Radio value="1">ROOT CA</Radio>
+              <Radio value="2">INTERMEDIARY CA</Radio>
+              <Radio value="3">Not CA</Radio>
             </Stack>
           </RadioGroup>
           <Flex justifyContent="center" mt="30px">

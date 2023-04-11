@@ -10,13 +10,16 @@ import { ErrorResponse } from "./types/verification-response";
 
 export type CertificateActions = {
   generateEndCertificate: (certificate: Certificate) => Promise<ErrorResponse>;
-  generateIntermediaryCertificate: (certificate: Certificate) => Promise<ErrorResponse>;
+  generateIntermediaryCertificate: (
+    certificate: Certificate
+  ) => Promise<ErrorResponse>;
+  generateRootCertificate: (certificate: Certificate) => Promise<ErrorResponse>;
   getIssuers: () => Promise<void>;
   getCertificates: (pageNumber: number, pageSize: number) => Promise<void>;
   downloadCertificate: (serialNumber: string) => Promise<void>;
   revokeCertificate: (serialNumber: string) => Promise<void>;
   checkRevocationStatus: (serialNumber: string) => Promise<void>;
-  verifyCertificate: (certificate: File) => Promise<ErrorResponse>
+  verifyCertificate: (certificate: File) => Promise<ErrorResponse>;
 };
 
 export type CertificateState = {
@@ -73,9 +76,9 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
           return state;
         })
       );
-      return {error:null}
-    } catch (e:any) {
-        return {error:e.response.data.message}
+      return { error: null };
+    } catch (e: any) {
+      return { error: e.response.data.message };
     }
   },
   generateIntermediaryCertificate: async (certificate: Certificate) => {
@@ -108,9 +111,44 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
           return state;
         })
       );
-      return {error:null}
-    } catch (e:any) {
-        return {error: e.response.data.message}
+      return { error: null };
+    } catch (e: any) {
+      return { error: e.response.data.message };
+    }
+  },
+  generateRootCertificate: async (certificate: Certificate) => {
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/api/certificate/root`,
+        {
+          endDate: certificate.validTo,
+          issuerId: certificate.issuerSerial,
+          startDate: certificate.validFrom,
+          subject: {
+            commonName: certificate.commonName,
+            country: certificate.country,
+            email: certificate.email,
+            givenName: certificate.givenName,
+            organization: certificate.organization,
+            organizationUnit: certificate.organizationUnit,
+            surname: certificate.surname,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      set(
+        produce((state: CertificateState) => {
+          state.generateCertificateRes = null;
+          return state;
+        })
+      );
+      return { error: null };
+    } catch (e: any) {
+      return { error: e.response.data.message };
     }
   },
   getIssuers: async () => {
@@ -228,16 +266,21 @@ export const certificateStoreSlice: StateCreator<CertificateStore> = (set) => ({
     }
   },
   verifyCertificate: async (certificate: File) => {
-    try{
-      const res = await axios.post(`${process.env.REACT_APP_BASE_URL}/api/certificate/verify` ,{file: certificate}, {
-        headers: {
-          "Content-Type": "multipart/form-data;boundary=----WebKitFormBoundaryABC123",
-        },
-      });
-      return {error: null}
-    }catch(e: any){
-        console.log(e)
-        return {error: e.response.data.message}
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/api/certificate/verify`,
+        { file: certificate },
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data;boundary=----WebKitFormBoundaryABC123",
+          },
+        }
+      );
+      return { error: null };
+    } catch (e: any) {
+      console.log(e);
+      return { error: e.response.data.message };
     }
   },
 });
