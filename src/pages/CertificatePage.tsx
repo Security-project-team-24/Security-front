@@ -76,12 +76,12 @@ export const CertificatePage = () => {
       revocationDate: new Date(),
     };
     if (permission === "1") {
-      const errorResponse = await generateIntermediaryCertificate(certificate);
+      const errorResponse = await generateRootCertificate(certificate);
       showToast(errorResponse);
       return;
     }
     if (permission === "2") {
-      const errorResponse = await generateRootCertificate(certificate);
+      const errorResponse = await generateIntermediaryCertificate(certificate);
       showToast(errorResponse);
       return;
     }
