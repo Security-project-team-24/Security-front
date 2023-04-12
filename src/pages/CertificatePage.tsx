@@ -10,6 +10,7 @@ import {
   Stack,
   Text,
   useToast,
+  Checkbox,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { useApplicationStore } from "../store/application.store";
@@ -40,6 +41,10 @@ export const CertificatePage = () => {
   const [validTo, setValidTo] = useState(new Date());
   const [validFrom, setValidFrom] = useState(new Date());
   const [permission, setPermission] = useState("1");
+  const [cRLSign, setCrlSign] = useState<boolean>(false);
+  const [keyEncipherment, setKeyEncipherment] = useState<boolean>(false);
+  const [dataEncipherment, setDataEncipherment] = useState<boolean>(false);
+  const [nonRepudiation, setNonRepudiation] = useState<boolean>(false);
 
   const init = async () => {
     await getIssuers();
@@ -74,6 +79,12 @@ export const CertificatePage = () => {
       keystore: "",
       revocationStatus: false,
       revocationDate: new Date(),
+      extensions: {
+        crlsign: cRLSign,
+        dataEncipherment: dataEncipherment,
+        keyEncipherment: keyEncipherment,
+        nonRepudiation: nonRepudiation,
+      },
     };
     if (permission === "1") {
       const errorResponse = await generateRootCertificate(certificate);
@@ -90,7 +101,7 @@ export const CertificatePage = () => {
   };
 
   return (
-    <Flex justifyContent="center" mt="70px">
+    <Flex justifyContent="center" mt="50px">
       <Box width="50%">
         <Text fontSize="xl" align="center">
           Generate certificate
@@ -166,13 +177,42 @@ export const CertificatePage = () => {
             onChange={(e) => setValidTo(new Date(e.target.value))}
             // value={new Date()validTo.toLocaleDateString()}
           ></Input>
-          <RadioGroup onChange={setPermission} value={permission}>
+          <Text p="10px 0">Certificate type:</Text>
+          <RadioGroup onChange={setPermission} value={permission} pb="10px">
             <Stack direction="row">
               <Radio value="1">ROOT CA</Radio>
               <Radio value="2">INTERMEDIARY CA</Radio>
               <Radio value="3">Not CA</Radio>
             </Stack>
           </RadioGroup>
+          <Divider></Divider>
+          <Stack spacing={5} direction="row" pt={"10px"}>
+            <Text>Extensions:</Text>
+            <Checkbox
+              value="cRLSign"
+              onChange={(e) => setCrlSign(e.target.checked)}
+            >
+              cRLSign
+            </Checkbox>
+            <Checkbox
+              value="keyEncipherment"
+              onChange={(e) => setKeyEncipherment(e.target.checked)}
+            >
+              keyEncipherment
+            </Checkbox>
+            <Checkbox
+              value="nonRepudiation"
+              onChange={(e) => setNonRepudiation(e.target.checked)}
+            >
+              nonRepudiation
+            </Checkbox>
+            <Checkbox
+              value="dataEncipherment"
+              onChange={(e) => setDataEncipherment(e.target.checked)}
+            >
+              dataEncipherment
+            </Checkbox>
+          </Stack>
           <Flex justifyContent="center" mt="30px">
             <Button w="200px" onClick={handleGenerateCertificate}>
               Generate
