@@ -29,6 +29,7 @@ import { displayToast } from "../utils/toast.caller";
 import { CertificateRevocationStatus } from "../components/CertificateRevocationStatus";
 import { type } from "os";
 import { ErrorResponse } from "../store/types/verification-response";
+import {useNavigate} from "react-router";
 
 export const CertificatesDisplayPage = () => {
   const getCertificates = useApplicationStore((state) => state.getCertificates);
@@ -61,6 +62,7 @@ export const CertificatesDisplayPage = () => {
     onOpen: onOpenRevocationStatusModal,
     onClose: onCloseRevocationStatusModal,
   } = useDisclosure();
+  const navigate = useNavigate();
   const toast = useToast();
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate>({
     id: "",
@@ -134,6 +136,10 @@ export const CertificatesDisplayPage = () => {
     onOpen();
   };
 
+  const handleRowClick = (item: Certificate) => {
+    navigate(`/certificate/${item.serialNumber}/chain`);
+  }
+
   return (
     <>
       <TableContainer flex={1}>
@@ -182,6 +188,15 @@ export const CertificatesDisplayPage = () => {
                   </Td>
                   <Td>
                     <Button
+                        onClick={() => {
+                          handleRowClick(item);
+                        }}
+                    >
+                      Chain
+                    </Button>
+                  </Td>
+                  <Td>
+                    <Button
                       color="red"
                       onClick={() => {
                         revoke(item.serialNumber);
@@ -190,6 +205,7 @@ export const CertificatesDisplayPage = () => {
                       Revoke
                     </Button>
                   </Td>
+
                 </Tr>
               ))}
           </Tbody>
