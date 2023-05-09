@@ -45,6 +45,7 @@ export const CertificatePage = () => {
   const [keyEncipherment, setKeyEncipherment] = useState<boolean>(false);
   const [dataEncipherment, setDataEncipherment] = useState<boolean>(false);
   const [nonRepudiation, setNonRepudiation] = useState<boolean>(false);
+  const [isCRLSignDisabled, setisCRLSignDisabled] = useState<boolean>(false);
 
   const init = async () => {
     await getIssuers();
@@ -54,6 +55,15 @@ export const CertificatePage = () => {
   useEffect(() => {
     init();
   }, []);
+
+  useEffect(() => {
+    if (permission === "3") {
+      setCrlSign(false);
+      setisCRLSignDisabled(true);
+      return;
+    }
+    setisCRLSignDisabled(false);
+  }, [permission]);
   const showToast = (errorResponse: ErrorResponse) => {
     if (!errorResponse.error) {
       displayToast(toast, "Certificate created!", "success");
@@ -189,6 +199,8 @@ export const CertificatePage = () => {
           <Stack spacing={5} direction="row" pt={"10px"}>
             <Text>Extensions:</Text>
             <Checkbox
+              isChecked={cRLSign}
+              isDisabled={isCRLSignDisabled}
               value="cRLSign"
               onChange={(e) => setCrlSign(e.target.checked)}
             >
