@@ -1,3 +1,5 @@
+import { Extension } from "./extension";
+
 export type Certificate = {
   id: string;
   serialNumber: string;
@@ -14,4 +16,5 @@ export type Certificate = {
   keystore: string;
   revocationStatus: boolean;
   revocationDate: Date;
+  extensions?: Extension;
 };
